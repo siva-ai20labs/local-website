@@ -1,0 +1,93 @@
+// Local Website — admin dashboard data model
+// SQLite for local dev; swap `provider` to "postgresql" for production.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+/// A small business discovered by the daily scraper.
+model Business {
+  id          String   @id @default(cuid())
+  // Stable identity from the source (e.g. Google Places place_id). Unique so
+  // re-scrapes upsert instead of duplicating.
+  placeId     String   @unique
+  name        String
+  category    String // e.g. "Coffee Shop", "Plumber" — the scrape category
+  address     String?
+  phone       String?
+  website     String? // the business's existing site, if any
+  hasWebsite  Boolean  @default(false)
+  rating      Float? // 0–5 stars
+  reviewCount Int      @default(0)
+  priceLevel  Int? // 0–4 (Google price_level)
+  latitude    Float?
+  longitude   Float?
+  photoUrl    String? // primary photo (branding signal)
+
+  // Derived enrichment, stored as JSON strings (SQLite has no JSON type).
+  brandingJson   String? // { palette: string[], vibe, photos: string[], summary }
+  highlightsJson String? // string[] — selling points / amenities
+
+  // Workflow status: NEW -> ENRICHED -> GENERATED
+  status String @default("NEW")
+
+  reviews     Review[]
+  site        GeneratedSite?
+  scrapeRun   ScrapeRun?     @relation(fields: [scrapeRunId], references: [id])
+  scrapeRunId String?
+
+  scrapedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([status])
+}
+
+/// A single customer review attached to a business.
+model Review {
+  id         String    @id @default(cuid())
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId String
+  author     String?
+  rating     Float?
+  text       String?
+  time       DateTime?
+
+  @@index([businessId])
+}
+
+/// An AI-generated single-page website for a business.
+model GeneratedSite {
+  id         String   @id @default(cuid())
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId String   @unique
+  slug       String   @unique // preview URL slug
+  template   String // template key used
+  html       String // fully self-contained HTML document
+  copyJson   String // the AI-written copy (tagline, about, services, etc.)
+  model      String? // which Claude model produced the copy
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+/// One execution of the daily scraper, for status/auditing.
+model ScrapeRun {
+  id         String     @id @default(cuid())
+  category   String?
+  location   String?
+  source     String     @default("google_places") // or "seed"
+  status     String     @default("RUNNING") // RUNNING | SUCCEEDED | FAILED
+  found      Int        @default(0)
+  created    Int        @default(0)
+  updated    Int        @default(0)
+  error      String?
+  businesses Business[]
+  startedAt  DateTime   @default(now())
+  finishedAt DateTime?
+}
