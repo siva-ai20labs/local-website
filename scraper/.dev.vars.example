@@ -1,0 +1,5 @@
+# Local secrets for `wrangler dev` (copy to .dev.vars — gitignored).
+# In production set these with: wrangler secret put <NAME>
+APIFY_API_TOKEN=""
+GOOGLE_PLACES_API_KEY=""
+CRON_SECRET=""

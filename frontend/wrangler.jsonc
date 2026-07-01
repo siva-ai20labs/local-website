@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "local-website-frontend",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-05-05",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  // Private calls into the other Workers (no public URLs on them).
+  "services": [
+    { "binding": "BACKEND", "service": "local-website-backend" },
+    { "binding": "SCRAPER", "service": "local-website-scraper" }
+  ],
+  "vars": {
+    "ALLOWED_EMAIL_DOMAIN": "ai20labs.com"
+    // Secrets (set with `wrangler secret put <NAME>`):
+    //   AUTH_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+  }
+}

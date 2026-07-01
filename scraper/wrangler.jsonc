@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "local-website-scraper",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-05-05",
+  "compatibility_flags": ["nodejs_compat"],
+  // Daily sweep at 09:00 UTC. Adjust or add more cron lines as needed.
+  "triggers": {
+    "crons": ["0 9 * * *"]
+  },
+  // Private call into the backend Worker (owns D1). No public route needed.
+  "services": [
+    {
+      "binding": "BACKEND",
+      "service": "local-website-backend"
+    }
+  ],
+  "vars": {
+    "DEFAULT_LOCATION": "Austin, TX",
+    "APIFY_ACTOR_ID": "compass~crawler-google-places"
+    // Secrets (set with `wrangler secret put <NAME>`):
+    //   APIFY_API_TOKEN, GOOGLE_PLACES_API_KEY, CRON_SECRET
+  }
+}

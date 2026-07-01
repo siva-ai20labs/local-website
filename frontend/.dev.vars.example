@@ -1,0 +1,6 @@
+# Local secrets for `wrangler dev`/`opennextjs-cloudflare preview` (copy to
+# .dev.vars — gitignored). For plain `next dev`, these come from frontend/.env.
+# In production set these with: wrangler secret put <NAME>
+AUTH_SECRET=""
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""

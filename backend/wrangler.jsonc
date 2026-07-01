@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "local-website-backend",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-05-05",
+  "compatibility_flags": ["nodejs_compat"],
+  // Private API: no routes/custom domain. Reached only via service bindings
+  // from the frontend and scraper Workers.
+  "workers_dev": false,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "local-website-db",
+      // Filled in after `wrangler d1 create local-website-db`.
+      "database_id": "e09184bb-56a7-4881-bbf2-529557853050",
+      "migrations_dir": "../packages/db/prisma/migrations"
+    }
+  ],
+  "vars": {
+    "ANTHROPIC_MODEL": "claude-opus-4-8"
+    // ANTHROPIC_API_KEY is a secret: `wrangler secret put ANTHROPIC_API_KEY`
+  }
+}
