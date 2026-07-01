@@ -1,0 +1,55 @@
+name: Scraper
+
+# Runs only when the scraper or a package it depends on changes.
+# scraper imports @local-website/types.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scraper/**"
+      - "packages/types/**"
+      - "package-lock.json"
+      - ".github/workflows/scraper.yml"
+  pull_request:
+    paths:
+      - "scraper/**"
+      - "packages/types/**"
+      - "package-lock.json"
+      - ".github/workflows/scraper.yml"
+
+concurrency:
+  group: scraper-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck -w scraper
+
+  deploy:
+    needs: check
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Deploy scraper
+        run: npm run deploy -w scraper
