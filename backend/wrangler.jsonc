@@ -12,7 +12,7 @@
       "binding": "DB",
       "database_name": "local-website-db",
       // Filled in after `wrangler d1 create local-website-db`.
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "database_id": "e09184bb-56a7-4881-bbf2-529557853050",
       "migrations_dir": "../packages/db/prisma/migrations"
     }
   ],
