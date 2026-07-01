@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
+# dependencies (hoisted root + any per-workspace)
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -11,14 +11,21 @@
 !.yarn/versions
 
 # testing
-/coverage
+coverage/
 
 # next.js
-/.next/
-/out/
+.next/
+out/
 
 # production
-/build
+build/
+
+# cloudflare / wrangler / opennext
+.open-next/
+.wrangler/
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
 
 # misc
 .DS_Store
@@ -31,7 +38,8 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
+.env.*
 !.env.example
 
 # local sqlite database
@@ -45,4 +53,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-/src/generated/prisma
+# generated prisma client (regenerated on install)
+**/generated/prisma/
