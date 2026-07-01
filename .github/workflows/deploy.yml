@@ -1,0 +1,51 @@
+name: Deploy to Cloudflare
+
+# Push-to-deploy: any push to main (that touches code) deploys all three
+# Workers. Can also be run on demand from the Actions tab.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - ".gitignore"
+      - ".github/**"
+  workflow_dispatch:
+
+# Never let two deploys race; cancel an in-progress one when a newer push lands.
+concurrency:
+  group: deploy-cloudflare
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client (Cloudflare runtime)
+        run: npm run generate -w @local-website/db
+
+      # Order matters: the bound services (backend, scraper) must exist before
+      # the frontend, whose service bindings resolve them by name.
+      - name: Deploy backend
+        run: npm run deploy -w backend
+
+      - name: Deploy scraper
+        run: npm run deploy -w scraper
+
+      - name: Deploy frontend
+        run: npm run deploy -w frontend
